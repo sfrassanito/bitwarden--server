@@ -70,6 +70,25 @@ public class ServiceAccountsControllerTest : IClassFixture<ApiApplicationFactory
     }
 
     [Fact]
+    public async Task GetServiceAccount()
+    {
+        var createdServiceAccount = await _serviceAccountRepository.CreateAsync(new ServiceAccount
+        {
+            OrganizationId = _organization.Id,
+            Name = _mockEncryptedString,
+        });
+
+        var response = await _client.GetAsync($"/service-accounts/{createdServiceAccount.Id}");
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<ServiceAccount>();
+        Assert.Equal(createdServiceAccount.Id, result.Id);
+        Assert.Equal(createdServiceAccount.OrganizationId, result.OrganizationId);
+        Assert.Equal(createdServiceAccount.Name, result.Name);
+        Assert.Equal(createdServiceAccount.RevisionDate, result.RevisionDate);
+        Assert.Equal(createdServiceAccount.CreationDate, result.CreationDate);
+    }
+
+    [Fact]
     public async Task CreateServiceAccount()
     {
         var request = new ServiceAccountCreateRequestModel()

@@ -3,6 +3,7 @@ using Bit.Api.Models.Response.SecretsManager;
 using Bit.Api.SecretManagerFeatures.Models.Request;
 using Bit.Api.SecretManagerFeatures.Models.Response;
 using Bit.Api.Utilities;
+using Bit.Core.Exceptions;
 using Bit.Core.Repositories;
 using Bit.Core.SecretManagerFeatures.AccessTokens.Interfaces;
 using Bit.Core.SecretManagerFeatures.ServiceAccounts.Interfaces;
@@ -39,6 +40,17 @@ public class ServiceAccountsController : Controller
         var serviceAccounts = await _serviceAccountRepository.GetManyByOrganizationIdAsync(organizationId);
         var responses = serviceAccounts.Select(serviceAccount => new ServiceAccountResponseModel(serviceAccount));
         return new ListResponseModel<ServiceAccountResponseModel>(responses);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ServiceAccountResponseModel> GetServiceAccountByIdAsync([FromRoute] Guid id)
+    {
+        var serviceAccount = await _serviceAccountRepository.GetByIdAsync(id);
+        if (serviceAccount == null)
+        {
+            throw new NotFoundException();
+        }
+        return new ServiceAccountResponseModel(serviceAccount);
     }
 
     [HttpPost("/organizations/{organizationId}/service-accounts")]

@@ -1,6 +1,7 @@
 ﻿using Bit.Api.Controllers;
 using Bit.Api.SecretManagerFeatures.Models.Request;
 using Bit.Core.Entities;
+using Bit.Core.Exceptions;
 using Bit.Core.Repositories;
 using Bit.Core.SecretManagerFeatures.AccessTokens.Interfaces;
 using Bit.Core.SecretManagerFeatures.ServiceAccounts.Interfaces;
@@ -17,6 +18,25 @@ namespace Bit.Api.Test.Controllers;
 [JsonDocumentCustomize]
 public class ServiceAccountsControllerTests
 {
+    [Theory]
+    [BitAutoData]
+    public async void GetServiceAccount_NotFound(SutProvider<ServiceAccountsController> sutProvider)
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => sutProvider.Sut.GetServiceAccountByIdAsync(Guid.NewGuid()));
+    }
+
+    [Theory]
+    [BitAutoData]
+    public async void GetServiceAccount_Success(SutProvider<ServiceAccountsController> sutProvider, ServiceAccount resultServiceAccount)
+    {
+        sutProvider.GetDependency<IServiceAccountRepository>().GetByIdAsync(default).ReturnsForAnyArgs(resultServiceAccount);
+
+        var result = await sutProvider.Sut.GetServiceAccountByIdAsync(resultServiceAccount.Id);
+
+        await sutProvider.GetDependency<IServiceAccountRepository>().Received(1)
+                     .GetByIdAsync(Arg.Is(AssertHelper.AssertPropertyEqual(resultServiceAccount.Id)));
+    }
+
     [Theory]
     [BitAutoData]
     public async void GetServiceAccountsByOrganization_ReturnsEmptyList(SutProvider<ServiceAccountsController> sutProvider, Guid id)
@@ -40,7 +60,6 @@ public class ServiceAccountsControllerTests
         await sutProvider.GetDependency<IServiceAccountRepository>().Received(1)
                      .GetManyByOrganizationIdAsync(Arg.Is(AssertHelper.AssertPropertyEqual(resultServiceAccount.OrganizationId)));
     }
-
 
     [Theory]
     [BitAutoData]
