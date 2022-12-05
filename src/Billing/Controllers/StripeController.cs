@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Bit.Billing.Constants;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
